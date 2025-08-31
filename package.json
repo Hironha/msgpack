@@ -1,0 +1,18 @@
+{
+  "name": "msgpack",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "version": "0.0.1",
+  "description": "An implementation of the MessagePack protocol for efficient object serialization",
+  "main": "index.ts",
+  "scripts": {
+    "start": "node ./src/index.ts"
+  },
+  "author": "Hironha",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^24.3.0"
+  }
+}
