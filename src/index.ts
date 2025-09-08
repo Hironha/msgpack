@@ -73,75 +73,37 @@ const INT64_MIN = -1n * 2n ** 63n;
 const UINT64 = 0xcf;
 const UINT64_MAX = 2n ** 64n - 1n;
 
-// head byte of fixext4
-const FIXEXT4 = 0xd6;
+// most significant byte of float32
+const FLOAT32 = 0xca;
 
-// head byte of fixext8
-const FIXEXT8 = 0xd7;
+// most significant byte of float64
+const FLOAT64 = 0xcb;
 
-// head byte of ext8
-const EX8 = 0xc7;
+// use with AND to set most significant four bits as 1001
+const FIXARRAY_MASK = 0x10010000;
+const FIXARRAY_MAX = 15;
 
-// head byte of timestamp32, since it's encoded as fixext4, it uses the same head
-const TS32 = FIXEXT4;
+// most significant byte of array16
+const ARRAY16 = 0xdc;
+const ARRAY16_MAX = 2 ** 16 - 1;
 
-function encodeInt(value: number | bigint): Uint8Array {
-  if (typeof value === "number" && !Number.isInteger(value)) {
-    throw new Error("Encode int expected an integer as argument");
-  }
+// most significant byte of array32
+const ARRAY32 = 0xdd;
+const ARRAY32_MAX = 2 ** 32 - 1;
 
-  let view: DataView;
-  if (value >= 0) {
-    if (value <= POSITIVE_FIXINT_MAX) {
-      view = new DataView(new ArrayBuffer(1));
-      view.setInt8(0, Number(value) & POSITIVE_FIXINT_MASK);
-    } else if (value <= UINT8_MAX) {
-      view = new DataView(new ArrayBuffer(2));
-      view.setUint8(0, UINT8);
-      view.setUint8(1, Number(value));
-    } else if (value <= UINT16_MAX) {
-      view = new DataView(new ArrayBuffer(3));
-      view.setUint8(0, UINT16);
-      view.setUint16(1, Number(value));
-    } else if (value <= UINT32_MAX) {
-      view = new DataView(new ArrayBuffer(5));
-      view.setUint8(0, UINT32);
-      view.setUint32(1, Number(value));
-    } else if (value <= UINT64_MAX) {
-      view = new DataView(new ArrayBuffer(9));
-      view.setUint8(0, UINT64);
-      view.setBigUint64(1, BigInt(value));
-    } else {
-      throw new Error("integers bigger than uint64 max are not supported");
-    }
-  } else {
-    if (value >= NEGATIVE_FIXINT_MIN) {
-      view = new DataView(new ArrayBuffer(1));
-      // add 0x20 (0b00100000) to convert from unsigned to signed
-      view.setInt8(0, NEGATIVE_FIXINT_MASK | (Number(value) + 0x20));
-    } else if (value >= INT8_MIN) {
-      view = new DataView(new ArrayBuffer(2));
-      view.setUint8(0, INT8);
-      view.setInt8(1, Number(value));
-    } else if (value >= INT16_MIN) {
-      view = new DataView(new ArrayBuffer(3));
-      view.setUint8(0, INT16);
-      view.setInt16(1, Number(value));
-    } else if (value >= INT32_MIN) {
-      view = new DataView(new ArrayBuffer(5));
-      view.setUint8(0, INT32);
-      view.setInt32(1, Number(value));
-    } else if (value >= INT64_MIN) {
-      view = new DataView(new ArrayBuffer(9));
-      view.setUint8(0, INT64);
-      view.setBigInt64(1, BigInt(value));
-    } else {
-      throw new Error("integers smaller than int64 min are not supported");
-    }
-  }
+// use with AND to set most significant bytes as 1000
+const FIXMAP_MASK = 0b10001111;
+const FIXMAP_MAX = 15;
 
-  return new Uint8Array(view.buffer);
-}
+// most significant byte of map16
+const MAP16 = 0xde;
+const MAP16_MAX = 2 ** 16 - 1;
+
+// most significant byte of map32
+const MAP32 = 0xdf;
+const MAP32_MAX = 2 ** 32 - 1;
+
+// TODO: add support for timestamp and other extensions
 
 function decodeInt(value: Uint8Array): number | bigint {
   if (value.byteLength === 0) {
@@ -187,34 +149,6 @@ function decodeInt(value: Uint8Array): number | bigint {
   return decoded;
 }
 
-function encodeBin(value: ArrayBufferView): Uint8Array {
-  const size = value.byteLength;
-
-  let offset = 0;
-  let arr: Uint8Array;
-  if (size <= BIN8_MAX) {
-    offset = 2;
-    arr = new Uint8Array(size + offset);
-    arr[0] = BIN8;
-    arr[1] = size;
-  } else if (size <= BIN16_MAX) {
-    offset = 3;
-    arr = new Uint8Array(size + offset);
-    arr[0] = BIN16;
-    arr[1] = size;
-  } else if (size <= BIN32_MAX) {
-    offset = 5;
-    arr = new Uint8Array(size + offset);
-    arr[0] = BIN32;
-    arr[1] = size;
-  } else {
-    throw new Error(`Binary of size ${size} not supported`);
-  }
-
-  arr.set(new Uint8Array(value.buffer), offset);
-  return arr;
-}
-
 function decodeBin(value: Uint8Array): Uint8Array {
   if (value.byteLength === 0) {
     throw new Error("Expected encoded bin to have at least one byte");
@@ -238,41 +172,7 @@ function decodeBin(value: Uint8Array): Uint8Array {
   }
 
   const arr = new Uint8Array(size);
-  arr.set(value.slice(offset));
-  return arr;
-}
-
-function encodeStr(value: string): Uint8Array {
-  const encoder = new TextEncoder();
-  const bytes = encoder.encode(value);
-  const size = bytes.byteLength;
-
-  let offset = 0;
-  let arr: Uint8Array;
-  if (size <= FIXSTR_MAX_BYTES) {
-    offset = 1;
-    arr = new Uint8Array(size + offset);
-    arr[0] = size | FIXSTR;
-  } else if (size <= STR8_MAX_BYTES) {
-    offset = 2;
-    arr = new Uint8Array(size + offset);
-    arr[0] = STR8;
-    arr[1] = size;
-  } else if (size <= STR16_MAX_BYTES) {
-    offset = 3;
-    arr = new Uint8Array(size + offset);
-    arr[0] = STR16;
-    arr[1] = size;
-  } else if (size <= STR32_MAX_BYTES) {
-    offset = 5;
-    arr = new Uint8Array(size + offset);
-    arr[0] = STR32;
-    arr[1] = size;
-  } else {
-    throw new Error(`Str with size of ${size} bytes is not supported`);
-  }
-
-  arr.set(bytes, offset);
+  arr.set(value.slice(offset, offset + size));
   return arr;
 }
 
@@ -297,28 +197,17 @@ function decodeStr(view: DataView): string {
     throw new Error("Invalid encoded string");
   }
 
-  if (size < view.byteLength - offset) {
-    throw new Error("Informed string size cannot fit encoded string");
-  }
-
-  const slice = view.buffer.slice(offset);
+  const slice = view.buffer.slice(offset, offset + size);
   const decoder = new TextDecoder("utf-8");
   return decoder.decode(new Uint8Array(slice));
 }
 
-function encodeNil(): DataView {
-  const buf = new ArrayBuffer(1);
-  const view = new DataView(buf);
-  view.setUint8(0, NIL);
-  return view;
-}
-
-function decodeNil(view: DataView): null {
-  if (view.byteLength !== 1) {
+function decodeNil(buf: Uint8Array): null {
+  if (buf.length !== 1) {
     throw new Error("Expected nil buffer to have one byte");
   }
 
-  const value = view.getUint8(0);
+  const value = buf[0];
   if (value !== NIL) {
     throw new Error("Invalid buffer byte for nil");
   }
@@ -326,19 +215,12 @@ function decodeNil(view: DataView): null {
   return null;
 }
 
-function encodeBool(value: boolean): DataView {
-  const buf = new ArrayBuffer(1);
-  const view = new DataView(buf);
-  view.setUint8(0, value ? BOOL_TRUE : BOOL_FALSE);
-  return view;
-}
-
-function decodeBool(view: DataView): boolean {
-  if (view.byteLength !== 1) {
+function decodeBool(buf: Uint8Array): boolean {
+  if (buf.length !== 1) {
     throw new Error("Expected boolean buffer to have one byte");
   }
 
-  const value = view.getUint8(0);
+  const value = buf[0];
   if (value === BOOL_TRUE) return true;
   if (value === BOOL_FALSE) return false;
 
@@ -346,11 +228,13 @@ function decodeBool(view: DataView): boolean {
 }
 
 class Buffer {
+  private view: DataView;
   private bytes: Uint8Array;
   private idx: number;
 
   constructor(capacity = 1024) {
     this.bytes = new Uint8Array(capacity);
+    this.view = new DataView(this.bytes.buffer);
     this.idx = 0;
   }
 
@@ -358,13 +242,62 @@ class Buffer {
     return this.bytes.subarray(0, this.idx);
   }
 
-  writeU8(byte: number): void {
-    this.ensureCapacity(1);
+  writeBytes(bytes: Uint8Array): void {
+    this.bytes.set(bytes, this.idx);
+    this.idx += bytes.length;
+  }
+
+  writeUint8(byte: number): void {
     this.bytes[this.idx] = byte;
     this.idx += 1;
   }
 
-  private ensureCapacity(size: number) {
+  writeUint16(value: number): void {
+    this.view.setUint16(this.idx, value);
+    this.idx += 2;
+  }
+
+  writeUint32(value: number): void {
+    this.view.setUint32(this.idx, value);
+    this.idx += 4;
+  }
+
+  writeUint64(value: bigint): void {
+    this.view.setBigUint64(this.idx, value);
+    this.idx += 8;
+  }
+
+  writeInt8(value: number): void {
+    this.view.setInt8(this.idx, value);
+    this.idx += 1;
+  }
+
+  writeInt16(value: number): void {
+    this.view.setInt16(this.idx, value);
+    this.idx += 2;
+  }
+
+  writeInt32(value: number): void {
+    this.view.setInt32(this.idx, value);
+    this.idx += 4;
+  }
+
+  writeInt64(value: bigint): void {
+    this.view.setBigInt64(this.idx, value);
+    this.idx += 8;
+  }
+
+  writeFloat32(value: number): void {
+    this.view.setFloat32(this.idx, value);
+    this.idx += 4;
+  }
+
+  writeFloat64(value: number): void {
+    this.view.setFloat64(this.idx, value);
+    this.idx += 8;
+  }
+
+  ensureCapacity(size: number) {
     const remaining = this.bytes.length - this.idx - 1;
     if (remaining < size) {
       let min = this.bytes.length + size;
@@ -373,62 +306,255 @@ class Buffer {
         capacity * 2;
       }
 
-      this.bytes = this.reallocate(capacity);
+      this.reallocate(capacity);
     }
   }
 
-  private reallocate(capacity: number): Uint8Array {
-    const buf = new Uint8Array(capacity);
-    buf.set(this.bytes);
-    return buf;
+  private reallocate(capacity: number): void {
+    const buf = new Uint8Array(this.bytes.buffer, 0, capacity);
+    this.bytes = buf;
+    this.view = new DataView(this.bytes.buffer);
   }
 }
 
 class Encoder {
   private buf: Buffer;
-  private idx: number;
 
   constructor(capacity?: number) {
     this.buf = new Buffer(capacity);
-    this.idx = 0;
   }
 
   encode(value: unknown): Uint8Array {
-    // TODO: implement the encoding
+    if (value === null) {
+      this.encodeNil();
+    } else if (value instanceof ArrayBuffer || value instanceof Uint8Array) {
+      this.encodeBin(new Uint8Array(value));
+    } else if (typeof value === "string") {
+      this.encodeStr(value);
+    } else if (typeof value === "boolean") {
+      this.encodeBool(value);
+    } else if (typeof value === "number") {
+      if (Number.isInteger(value)) {
+        this.encodeInt(value);
+      } else {
+        this.encodeFloat(value);
+      }
+    } else if (Array.isArray(value)) {
+      this.encodeArray(value);
+    } else if (typeof value === "object") {
+      this.encodeMap(value);
+    } else {
+      throw new Error("Encoding not supported for given object");
+    }
+
     return this.buf.toBytes();
+  }
+
+  private encodeNil(): void {
+    this.buf.ensureCapacity(1);
+    this.buf.writeUint8(NIL);
+  }
+
+  private encodeBool(value: boolean): void {
+    this.buf.ensureCapacity(1);
+    this.buf.writeUint8(value ? BOOL_TRUE : BOOL_FALSE);
+  }
+
+  private encodeBin(value: Uint8Array): void {
+    const size = value.byteLength;
+    if (size <= BIN8_MAX) {
+      this.buf.ensureCapacity(size + 2);
+      this.buf.writeUint8(BIN8);
+      this.buf.writeUint8(size);
+    } else if (size <= BIN16_MAX) {
+      this.buf.ensureCapacity(size + 3);
+      this.buf.writeUint8(BIN16);
+      this.buf.writeUint16(size);
+    } else if (size <= BIN32_MAX) {
+      this.buf.ensureCapacity(size + 5);
+      this.buf.writeUint8(BIN32);
+      this.buf.writeUint32(size);
+    } else {
+      throw new Error(`Binary of size ${size} not supported`);
+    }
+
+    this.buf.writeBytes(new Uint8Array(value.buffer));
+  }
+
+  private encodeStr(value: string): void {
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(value);
+    const size = bytes.length;
+
+    if (size <= FIXSTR_MAX_BYTES) {
+      this.buf.ensureCapacity(size + 1);
+      this.buf.writeUint8(size | FIXSTR);
+    } else if (size <= STR8_MAX_BYTES) {
+      this.buf.ensureCapacity(size + 2);
+      this.buf.writeUint8(STR8);
+      this.buf.writeUint8(size);
+    } else if (size <= STR16_MAX_BYTES) {
+      this.buf.ensureCapacity(size + 3);
+      this.buf.writeUint8(STR16);
+      this.buf.writeUint16(size);
+    } else if (size <= STR32_MAX_BYTES) {
+      this.buf.ensureCapacity(size + 5);
+      this.buf.writeUint8(STR32);
+      this.buf.writeUint32(size);
+    } else {
+      throw new Error(`Cannot encode str with more than ${size} bytes`);
+    }
+
+    this.buf.writeBytes(bytes);
+  }
+
+  private encodeInt(value: number | bigint): void {
+    if (value >= 0) {
+      if (value <= POSITIVE_FIXINT_MAX) {
+        this.buf.ensureCapacity(1);
+        this.buf.writeInt8(Number(value) & POSITIVE_FIXINT_MASK);
+      } else if (value <= UINT8_MAX) {
+        this.buf.ensureCapacity(2);
+        this.buf.writeUint8(UINT8);
+        this.buf.writeUint8(Number(value));
+      } else if (value <= UINT16_MAX) {
+        this.buf.ensureCapacity(3);
+        this.buf.writeUint8(UINT16);
+        this.buf.writeUint16(Number(value));
+      } else if (value <= UINT32_MAX) {
+        this.buf.ensureCapacity(5);
+        this.buf.writeUint8(UINT32);
+        this.buf.writeUint32(Number(value));
+      } else if (value <= UINT64_MAX) {
+        this.buf.ensureCapacity(9);
+        this.buf.writeUint8(UINT64);
+        this.buf.writeUint64(BigInt(value));
+      } else {
+        throw new Error("Integers bigger than uint64 max are not supported");
+      }
+    } else {
+      if (value >= NEGATIVE_FIXINT_MIN) {
+        this.buf.ensureCapacity(1);
+        // add 0x20 (0b00100000) to convert from unsigned to signed
+        this.buf.writeInt8(NEGATIVE_FIXINT_MASK | (Number(value) + 0x20));
+      } else if (value >= INT8_MIN) {
+        this.buf.ensureCapacity(2);
+        this.buf.writeUint8(INT8);
+        this.buf.writeInt8(Number(value));
+      } else if (value >= INT16_MIN) {
+        this.buf.ensureCapacity(3);
+        this.buf.writeUint8(INT16);
+        this.buf.writeInt16(Number(value));
+      } else if (value >= INT32_MIN) {
+        this.buf.ensureCapacity(5);
+        this.buf.writeUint8(INT32);
+        this.buf.writeInt32(Number(value));
+      } else if (value >= INT64_MIN) {
+        this.buf.ensureCapacity(9);
+        this.buf.writeUint8(INT64);
+        this.buf.writeInt64(BigInt(value));
+      } else {
+        throw new Error("Integers smaller than int64 min are not supported");
+      }
+    }
+  }
+
+  private encodeFloat(value: number): void {
+    const isFloat32 = Math.fround(value) === value;
+    if (isFloat32) {
+      this.buf.ensureCapacity(5);
+      this.buf.writeUint8(FLOAT32);
+      this.buf.writeFloat32(value);
+    } else {
+      this.buf.ensureCapacity(9);
+      this.buf.writeUint8(FLOAT64);
+      this.buf.writeFloat64(value);
+    }
+  }
+
+  private encodeArray(value: any[]): void {
+    const length = value.length;
+    if (length <= FIXARRAY_MAX) {
+      this.buf.ensureCapacity(1);
+      this.buf.writeUint8(FIXARRAY_MASK | length);
+    } else if (length <= ARRAY16_MAX) {
+      this.buf.ensureCapacity(3);
+      this.buf.writeUint8(ARRAY16);
+      this.buf.writeUint16(length);
+    } else if (length <= ARRAY32_MAX) {
+      this.buf.ensureCapacity(5);
+      this.buf.writeUint8(ARRAY32);
+      this.buf.writeUint32(length);
+    } else {
+      throw new Error(`Cannot encode array with more than ${length} items`);
+    }
+
+    for (const v of value) {
+      this.encode(v);
+    }
+  }
+
+  private encodeMap(value: Record<string, any>): void {
+    const keys = Object.keys(value);
+    const length = keys.length;
+    if (length <= FIXMAP_MAX) {
+      this.buf.ensureCapacity(2 * length + 1);
+      this.buf.writeUint8(FIXMAP_MASK & length);
+    } else if (length <= MAP16_MAX) {
+      this.buf.ensureCapacity(2 * length + 3);
+      this.buf.writeUint8(MAP16);
+      this.buf.writeUint16(length);
+    } else if (length <= MAP32_MAX) {
+      this.buf.ensureCapacity(2 * length + 5);
+      this.buf.writeUint8(MAP32);
+      this.buf.writeUint32(length);
+    } else {
+      throw new Error(`Map cannot have more than ${length} items`);
+    }
+
+    for (const k in value) {
+      const v = value[k];
+      // for now we do not encode undefined but may add a config to allow it
+      if (v !== undefined) {
+        this.encodeStr(k);
+        this.encode(v);
+      }
+    }
   }
 }
 
 function main() {
   let raw = true;
-  let encoded = encodeBool(raw);
+  let encoded = new Encoder().encode(raw);
   let decoded = decodeBool(encoded);
   if (raw != decoded) {
     throw new Error("expected raw to equal decoded");
   }
 
   raw = false;
-  encoded = encodeBool(raw);
+  encoded = new Encoder().encode(raw);
   decoded = decodeBool(encoded);
   if (raw != decoded) {
     throw new Error("expected raw to equal decoded");
   }
 
-  encoded = encodeNil();
+  encoded = new Encoder().encode(null);
   if (decodeNil(encoded) !== null) {
     throw new Error("expected null to equal decoded");
   }
 
   let str = "test";
-  const encstr = encodeStr("test");
+  const encstr = new Encoder().encode(str);
   let outstr = decodeStr(new DataView(encstr.buffer));
   if (outstr !== str) {
-    console.error(outstr);
+    const enc = new TextEncoder();
+    console.error(enc.encode(outstr), enc.encode(str));
     throw new Error("expected decoded str to equal raw str");
   }
 
   let bin = new TextEncoder().encode("test");
-  const encbin = encodeBin(bin);
+  const encbin = new Encoder().encode(bin);
+  console.warn({ encbin, bin });
   let outbin = decodeBin(encbin);
   if (outbin.toString() !== bin.toString()) {
     console.error(outbin, bin);
@@ -436,14 +562,14 @@ function main() {
   }
 
   let int: number | bigint = 2;
-  let encint = encodeInt(int);
+  let encint = new Encoder().encode(int);
   let outint = decodeInt(encint);
   if (outint !== int) {
     throw new Error("expected decoded int to equal raw int");
   }
 
   int = -2;
-  encint = encodeInt(int);
+  encint = new Encoder().encode(int);
   outint = decodeInt(encint);
   if (outint !== int) {
     console.error(encint, outint);
@@ -451,7 +577,7 @@ function main() {
   }
 
   int = -46700;
-  encint = encodeInt(int);
+  encint = new Encoder().encode(int);
   outint = decodeInt(encint);
   if (outint !== int) {
     console.error(encint, outint);
