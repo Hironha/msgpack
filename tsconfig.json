@@ -4,8 +4,8 @@
     "lib": [
       "ES2022"
     ],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "node16",
+    "moduleResolution": "node16",
     "types": [
       "node"
     ],
@@ -18,7 +18,9 @@
     "skipLibCheck": true
   },
   "include": [
-    "src/**/*.ts",
-    "test"
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
