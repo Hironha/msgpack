@@ -62,9 +62,6 @@ function main() {
     throw new Error("expected decoded int to equal raw int");
   }
 
-  // TODO: i think the decodeInt is still broken due to how i deal with
-  // negative fixint
-
   console.info("Everything ok");
 }
 
