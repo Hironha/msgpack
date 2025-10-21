@@ -13,7 +13,7 @@ export type MsgpackValue =
   | MsgpackValue[]
   | { [key: string]: MsgpackValue };
 
-export type DecodeErrorKind =
+export type DecodeIssueKind =
   | "unknown"
   | "bin8"
   | "bin16"
@@ -38,111 +38,107 @@ export type DecodeErrorKind =
   | "map16"
   | "map32";
 
-export class DecodeError {
-  public readonly kind: DecodeErrorKind;
+export class DecodeIssue {
+  public readonly kind: DecodeIssueKind;
   public readonly msg: string;
   public readonly at: number;
 
-  constructor(kind: DecodeErrorKind, msg: string, at: number) {
+  constructor(kind: DecodeIssueKind, msg: string, at: number) {
     this.kind = kind;
     this.msg = msg;
     this.at = at;
   }
 
-  static unknown(msg: string, at: number): DecodeError {
-    return new DecodeError("unknown", msg, at);
+  static unknown(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("unknown", msg, at);
   }
 
-  static bin8(msg: string, at: number): DecodeError {
-    return new DecodeError("bin8", msg, at);
+  static bin8(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("bin8", msg, at);
   }
 
-  static bin16(msg: string, at: number): DecodeError {
-    return new DecodeError("bin16", msg, at);
+  static bin16(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("bin16", msg, at);
   }
 
-  static bin32(msg: string, at: number): DecodeError {
-    return new DecodeError("bin32", msg, at);
+  static bin32(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("bin32", msg, at);
   }
 
-  static fixstr(msg: string, at: number): DecodeError {
-    return new DecodeError("fixstr", msg, at);
+  static fixstr(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("fixstr", msg, at);
   }
 
-  static str8(msg: string, at: number): DecodeError {
-    return new DecodeError("str8", msg, at);
+  static str8(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("str8", msg, at);
   }
 
-  static str16(msg: string, at: number): DecodeError {
-    return new DecodeError("str16", msg, at);
+  static str16(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("str16", msg, at);
   }
 
-  static str32(msg: string, at: number): DecodeError {
-    return new DecodeError("str32", msg, at);
+  static str32(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("str32", msg, at);
   }
 
-  static int8(msg: string, at: number): DecodeError {
-    return new DecodeError("int8", msg, at);
+  static int8(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("int8", msg, at);
   }
 
-  static int16(msg: string, at: number): DecodeError {
-    return new DecodeError("int16", msg, at);
+  static int16(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("int16", msg, at);
   }
 
-  static int32(msg: string, at: number): DecodeError {
-    return new DecodeError("int32", msg, at);
+  static int32(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("int32", msg, at);
   }
 
-  static int64(msg: string, at: number): DecodeError {
-    return new DecodeError("int64", msg, at);
+  static int64(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("int64", msg, at);
   }
 
-  static uint8(msg: string, at: number): DecodeError {
-    return new DecodeError("uint8", msg, at);
+  static uint8(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("uint8", msg, at);
   }
 
-  static uint16(msg: string, at: number): DecodeError {
-    return new DecodeError("uint16", msg, at);
+  static uint16(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("uint16", msg, at);
   }
 
-  static uint32(msg: string, at: number): DecodeError {
-    return new DecodeError("uint32", msg, at);
+  static uint32(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("uint32", msg, at);
   }
 
-  static uint64(msg: string, at: number): DecodeError {
-    return new DecodeError("uint64", msg, at);
+  static uint64(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("uint64", msg, at);
   }
 
-  static float32(msg: string, at: number): DecodeError {
-    return new DecodeError("float32", msg, at);
+  static float32(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("float32", msg, at);
   }
 
-  static float64(msg: string, at: number): DecodeError {
-    return new DecodeError("float64", msg, at);
+  static float64(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("float64", msg, at);
   }
 
-  static array16(msg: string, at: number): DecodeError {
-    return new DecodeError("array16", msg, at);
+  static array16(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("array16", msg, at);
   }
 
-  static array32(msg: string, at: number): DecodeError {
-    return new DecodeError("array32", msg, at);
+  static array32(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("array32", msg, at);
   }
 
-  static map(msg: string, at: number): DecodeError {
-    return new DecodeError("map", msg, at);
+  static map(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("map", msg, at);
   }
 
-  static map16(msg: string, at: number): DecodeError {
-    return new DecodeError("map16", msg, at);
+  static map16(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("map16", msg, at);
   }
 
-  static map32(msg: string, at: number): DecodeError {
-    return new DecodeError("map32", msg, at);
-  }
-
-  toError(): Error {
-    return new Error(this.msg);
+  static map32(msg: string, at: number): DecodeIssue {
+    return new DecodeIssue("map32", msg, at);
   }
 }
 
@@ -155,11 +151,11 @@ export class Decoder {
 
   // TODO: maybe check buffer bounds before accessing the bytes or
   // just throw the default out of bounds error
-  decode(): Result<MsgpackValue, DecodeError> {
+  decode(): Result<MsgpackValue, DecodeIssue> {
     const head = this.src.readUint8();
     if (!head) {
       const idx = this.src.getIndex();
-      return new Err(DecodeError.unknown("Missing type head byte", idx));
+      return new Err(DecodeIssue.unknown("Missing type head byte", idx));
     }
 
     if (Byte.isNil(head)) {
@@ -220,141 +216,141 @@ export class Decoder {
       return this.decodeMap32(this.src);
     } else {
       const idx = this.src.getIndex();
-      return new Err(DecodeError.unknown("Failed decoding unsupported type", idx));
+      return new Err(DecodeIssue.unknown("Failed decoding unsupported type", idx));
     }
   }
 
-  private decodeBin8(reader: Reader): Result<Uint8Array, DecodeError> {
+  private decodeBin8(reader: Reader): Result<Uint8Array, DecodeIssue> {
     const size = reader.readUint8();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.bin8("Missing size byte for bin8", idx));
+      return new Err(DecodeIssue.bin8("Missing size byte for bin8", idx));
     } else if (size > Byte.BIN8_MAX) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.bin8("Decoded bin8 size is bigger than max allowed", idx));
+      return new Err(DecodeIssue.bin8("Decoded bin8 size is bigger than max allowed", idx));
     }
 
     const bin = reader.read(size);
     if (!bin) {
       const idx = reader.getIndex();
       const msg = `Given bin8 size of ${size} does not match actual size`;
-      return new Err(DecodeError.bin8(msg, idx));
+      return new Err(DecodeIssue.bin8(msg, idx));
     }
 
     return new Ok(bin);
   }
 
-  private decodeBin16(reader: Reader): Result<Uint8Array, DecodeError> {
+  private decodeBin16(reader: Reader): Result<Uint8Array, DecodeIssue> {
     const size = reader.readUint16();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.bin16("Missing size bytes for bin16", idx));
+      return new Err(DecodeIssue.bin16("Missing size bytes for bin16", idx));
     } else if (size > Byte.BIN16_MAX) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.bin16("Decoded size of bin16 is bigger than max allowed", idx));
+      return new Err(DecodeIssue.bin16("Decoded size of bin16 is bigger than max allowed", idx));
     }
 
     const bin = reader.read(size);
     if (!bin) {
       const at = reader.getIndex();
       const msg = `Given bin16 size of ${size} does not match actual size`;
-      return new Err(DecodeError.bin16(msg, at));
+      return new Err(DecodeIssue.bin16(msg, at));
     }
 
     return new Ok(bin);
   }
 
-  private decodeBin32(reader: Reader): Result<Uint8Array, DecodeError> {
+  private decodeBin32(reader: Reader): Result<Uint8Array, DecodeIssue> {
     const size = reader.readUint32();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.bin32("Missing size bytes for bin32", idx));
+      return new Err(DecodeIssue.bin32("Missing size bytes for bin32", idx));
     } else if (size > Byte.BIN32_MAX) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.bin32("Decoded size of bin32 is bigger than max allowed", idx));
+      return new Err(DecodeIssue.bin32("Decoded size of bin32 is bigger than max allowed", idx));
     }
 
     const bin = reader.read(size);
     if (!bin) {
       const idx = reader.getIndex();
       const msg = `Given bin32 size of ${size} does not match actual size`;
-      return new Err(DecodeError.bin32(msg, idx));
+      return new Err(DecodeIssue.bin32(msg, idx));
     }
 
     return new Ok(bin);
   }
 
-  private decodeFixstr(reader: Reader, head: number): Result<string, DecodeError> {
+  private decodeFixstr(reader: Reader, head: number): Result<string, DecodeIssue> {
     const size = head & Byte.FIXSTR_SIZE_MASK;
     if (size > Byte.FIXSTR_MAX_BYTES) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.fixstr("Decoded size do fixstr is bigger than max allowed", idx));
+      return new Err(DecodeIssue.fixstr("Decoded size do fixstr is bigger than max allowed", idx));
     }
 
     const bytes = reader.read(size);
     if (!bytes) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.fixstr(`Could not read ${size} bytes for fixstr`, idx));
+      return new Err(DecodeIssue.fixstr(`Could not read ${size} bytes for fixstr`, idx));
     }
 
     const decoder = new TextDecoder("utf-8");
     return new Ok(decoder.decode(bytes));
   }
 
-  private decodeStr8(reader: Reader): Result<string, DecodeError> {
+  private decodeStr8(reader: Reader): Result<string, DecodeIssue> {
     const size = reader.readUint8();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.str8("Missing size bytes for str8", idx));
+      return new Err(DecodeIssue.str8("Missing size bytes for str8", idx));
     } else if (size > Byte.STR8_MAX_BYTES) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.str8("Decoded size of str8 is bigger than max allowed", idx));
+      return new Err(DecodeIssue.str8("Decoded size of str8 is bigger than max allowed", idx));
     }
 
     const bytes = reader.read(size);
     if (!bytes) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.str8(`Could not read ${size} bytes for str8`, idx));
+      return new Err(DecodeIssue.str8(`Could not read ${size} bytes for str8`, idx));
     }
 
     const decoder = new TextDecoder("utf-8");
     return new Ok(decoder.decode(bytes));
   }
 
-  private decodeStr16(reader: Reader): Result<string, DecodeError> {
+  private decodeStr16(reader: Reader): Result<string, DecodeIssue> {
     const size = reader.readUint16();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.str16("Missing size bytes for str16", idx));
+      return new Err(DecodeIssue.str16("Missing size bytes for str16", idx));
     } else if (size > Byte.STR16_MAX_BYTES) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.str16("Decoded size of str16 is bigger than max allowed", idx));
+      return new Err(DecodeIssue.str16("Decoded size of str16 is bigger than max allowed", idx));
     }
 
     const bytes = reader.read(size);
     if (!bytes) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.str16(`Could not read ${size} bytes for str16`, idx));
+      return new Err(DecodeIssue.str16(`Could not read ${size} bytes for str16`, idx));
     }
 
     const decoder = new TextDecoder("utf-8");
     return new Ok(decoder.decode(bytes));
   }
 
-  private decodeStr32(reader: Reader): Result<string, DecodeError> {
+  private decodeStr32(reader: Reader): Result<string, DecodeIssue> {
     const size = reader.readUint32();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.str32("Missing size bytes for str32", idx));
+      return new Err(DecodeIssue.str32("Missing size bytes for str32", idx));
     } else if (size > Byte.STR32_MAX_BYTES) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.str32("Decoded size of str32 is bigger than max allowed", idx));
+      return new Err(DecodeIssue.str32("Decoded size of str32 is bigger than max allowed", idx));
     }
 
     const bytes = reader.read(size);
     if (!bytes) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.str32(`Could not read ${size} bytes for str32`, idx));
+      return new Err(DecodeIssue.str32(`Could not read ${size} bytes for str32`, idx));
     }
 
     const decoder = new TextDecoder("utf-8");
@@ -370,120 +366,120 @@ export class Decoder {
     return head - 0x100;
   }
 
-  private decodeInt8(reader: Reader): Result<number, DecodeError> {
+  private decodeInt8(reader: Reader): Result<number, DecodeIssue> {
     const value = reader.readInt8();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.int16("Missing decoded value for int8", idx));
+      return new Err(DecodeIssue.int16("Missing decoded value for int8", idx));
     }
     return new Ok(value);
   }
 
-  private decodeInt16(reader: Reader): Result<number, DecodeError> {
+  private decodeInt16(reader: Reader): Result<number, DecodeIssue> {
     const value = reader.readInt16();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.int16("Missing decoded value for int16", idx));
+      return new Err(DecodeIssue.int16("Missing decoded value for int16", idx));
     }
     return new Ok(value);
   }
 
-  private decodeInt32(reader: Reader): Result<number, DecodeError> {
+  private decodeInt32(reader: Reader): Result<number, DecodeIssue> {
     const value = reader.readInt32();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.int32("Missing decoded value for int32", idx));
+      return new Err(DecodeIssue.int32("Missing decoded value for int32", idx));
     }
     return new Ok(value);
   }
 
-  private decodeInt64(reader: Reader): Result<bigint, DecodeError> {
+  private decodeInt64(reader: Reader): Result<bigint, DecodeIssue> {
     const value = reader.readInt64();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.int64("Missing decoded value for int32", idx));
+      return new Err(DecodeIssue.int64("Missing decoded value for int32", idx));
     }
     return new Ok(value);
   }
 
-  private decodeUint8(reader: Reader): Result<number, DecodeError> {
+  private decodeUint8(reader: Reader): Result<number, DecodeIssue> {
     const value = reader.readUint8();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.uint8("Missing decoded value for uint8", idx));
+      return new Err(DecodeIssue.uint8("Missing decoded value for uint8", idx));
     }
     return new Ok(value);
   }
 
-  private decodeUint16(reader: Reader): Result<number, DecodeError> {
+  private decodeUint16(reader: Reader): Result<number, DecodeIssue> {
     const value = reader.readUint16();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.uint16("Missing decoded value for uint16", idx));
+      return new Err(DecodeIssue.uint16("Missing decoded value for uint16", idx));
     }
     return new Ok(value);
   }
 
-  private decodeUint32(reader: Reader): Result<number, DecodeError> {
+  private decodeUint32(reader: Reader): Result<number, DecodeIssue> {
     const value = reader.readUint32();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.uint32("Missing decoded value for uint32", idx));
+      return new Err(DecodeIssue.uint32("Missing decoded value for uint32", idx));
     }
     return new Ok(value);
   }
 
-  private decodeUint64(reader: Reader): Result<bigint, DecodeError> {
+  private decodeUint64(reader: Reader): Result<bigint, DecodeIssue> {
     const value = reader.readUint64();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.uint64("Missing decoded value for uint64", idx));
+      return new Err(DecodeIssue.uint64("Missing decoded value for uint64", idx));
     }
     return new Ok(value);
   }
 
-  private decodeFloat32(reader: Reader): Result<number, DecodeError> {
+  private decodeFloat32(reader: Reader): Result<number, DecodeIssue> {
     const value = reader.readFloat32();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.float32("Missing decoded value for float32", idx));
+      return new Err(DecodeIssue.float32("Missing decoded value for float32", idx));
     }
     return new Ok(value);
   }
 
-  private decodeFloat64(reader: Reader): Result<number, DecodeError> {
+  private decodeFloat64(reader: Reader): Result<number, DecodeIssue> {
     const value = reader.readFloat64();
     if (!value) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.float64("Missing decoded value for float64", idx));
+      return new Err(DecodeIssue.float64("Missing decoded value for float64", idx));
     }
     return new Ok(value);
   }
 
-  private decodeFixarray(head: number): Result<MsgpackValue[], DecodeError> {
+  private decodeFixarray(head: number): Result<MsgpackValue[], DecodeIssue> {
     const size = head & 0x00001111;
     return this.decodeArray(size);
   }
 
-  private decodeArray16(reader: Reader): Result<MsgpackValue[], DecodeError> {
+  private decodeArray16(reader: Reader): Result<MsgpackValue[], DecodeIssue> {
     const size = reader.readUint16();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.array16("Missing decoded size for array16", idx));
+      return new Err(DecodeIssue.array16("Missing decoded size for array16", idx));
     }
     return this.decodeArray(size);
   }
 
-  private decodeArray32(reader: Reader): Result<MsgpackValue[], DecodeError> {
+  private decodeArray32(reader: Reader): Result<MsgpackValue[], DecodeIssue> {
     const size = reader.readUint32();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.array32("Missing decoded size for array32", idx));
+      return new Err(DecodeIssue.array32("Missing decoded size for array32", idx));
     }
     return this.decodeArray(size);
   }
 
-  private decodeArray(size: number): Result<MsgpackValue[], DecodeError> {
+  private decodeArray(size: number): Result<MsgpackValue[], DecodeIssue> {
     const arr: MsgpackValue[] = [];
     for (let i = 0; i < size; i += 1) {
       const decoded = this.decode();
@@ -498,25 +494,25 @@ export class Decoder {
   private decodeFixmap(
     reader: Reader,
     head: number,
-  ): Result<{ [key: string]: MsgpackValue }, DecodeError> {
+  ): Result<{ [key: string]: MsgpackValue }, DecodeIssue> {
     const size = head & 0x00001111;
     return this.decodeMap(reader, size);
   }
 
-  private decodeMap16(reader: Reader): Result<{ [key: string]: MsgpackValue }, DecodeError> {
+  private decodeMap16(reader: Reader): Result<{ [key: string]: MsgpackValue }, DecodeIssue> {
     const size = reader.readUint16();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.map16("Missing decoded size for map16", idx));
+      return new Err(DecodeIssue.map16("Missing decoded size for map16", idx));
     }
     return this.decodeMap(reader, size);
   }
 
-  private decodeMap32(reader: Reader): Result<{ [key: string]: MsgpackValue }, DecodeError> {
+  private decodeMap32(reader: Reader): Result<{ [key: string]: MsgpackValue }, DecodeIssue> {
     const size = reader.readUint32();
     if (!size) {
       const idx = reader.getIndex();
-      return new Err(DecodeError.map32("Missing decoded size for map32", idx));
+      return new Err(DecodeIssue.map32("Missing decoded size for map32", idx));
     }
     return this.decodeMap(reader, size);
   }
@@ -524,7 +520,7 @@ export class Decoder {
   private decodeMap(
     reader: Reader,
     size: number,
-  ): Result<{ [key: string]: MsgpackValue }, DecodeError> {
+  ): Result<{ [key: string]: MsgpackValue }, DecodeIssue> {
     const map: Record<string, MsgpackValue> = {};
     for (let i = 0; i < size; i += 1) {
       const key = this.decode();
@@ -532,7 +528,7 @@ export class Decoder {
         return key;
       } else if (typeof key.value !== "string") {
         const idx = reader.getIndex();
-        return new Err(DecodeError.map("Expected map key to be a string", idx));
+        return new Err(DecodeIssue.map("Expected map key to be a string", idx));
       }
 
       const decoded = this.decode();
