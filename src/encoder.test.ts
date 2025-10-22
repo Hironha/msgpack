@@ -38,6 +38,71 @@ describe("Encoder", () => {
     expect(Ok.unwrap(result)).toStrictEqual(expected);
   });
 
+  test.each([1, Byte.BIN8_MAX])("encode bin8 with length %d works", (size) => {
+    const value = new Uint8Array(size);
+    for (let i = 0; i < size; i += 1) {
+      value[i] = 1;
+    }
+
+    const encoder = new Encoder(size);
+    const result = encoder.encode(value);
+
+    const expected = new Uint8Array(size + 2);
+    const view = new DataView(expected.buffer);
+    view.setUint8(0, Byte.BIN8);
+    view.setUint8(1, size);
+    for (let i = 0; i < size; i += 1) {
+      view.setUint8(i + 2, value[i]);
+    }
+
+    expect(Ok.is(result)).toBeTruthy();
+    expect(Ok.unwrap(result)).toStrictEqual(expected);
+  });
+
+  test.each([Byte.BIN8_MAX + 1, Byte.BIN16_MAX])("encode bin16 with length %d works", (size) => {
+    const value = new Uint8Array(size);
+    for (let i = 0; i < size; i += 1) {
+      value[i] = 1;
+    }
+
+    const encoder = new Encoder(size);
+    const result = encoder.encode(value);
+
+    const pad = 3;
+    const expected = new Uint8Array(size + pad);
+    const view = new DataView(expected.buffer);
+    view.setUint8(0, Byte.BIN16);
+    view.setUint16(1, size);
+    for (let i = 0; i < size; i += 1) {
+      view.setUint8(i + pad, value[i]);
+    }
+
+    expect(Ok.is(result)).toBeTruthy();
+    expect(Ok.unwrap(result)).toStrictEqual(expected);
+  });
+
+  test.each([Byte.BIN16_MAX + 1])("encode bin32 with length %d works", (size) => {
+    const value = new Uint8Array(size);
+    for (let i = 0; i < size; i += 1) {
+      value[i] = 1;
+    }
+
+    const encoder = new Encoder(size);
+    const result = encoder.encode(value);
+
+    const pad = 5;
+    const expected = new Uint8Array(size + pad);
+    const view = new DataView(expected.buffer);
+    view.setUint8(0, Byte.BIN32);
+    view.setUint32(1, size);
+    for (let i = 0; i < size; i += 1) {
+      view.setUint8(i + pad, value[i]);
+    }
+
+    expect(Ok.is(result)).toBeTruthy();
+    expect(Ok.unwrap(result)).toStrictEqual(expected);
+  });
+
   test("encode fixstr works", () => {
     const encoder = new Encoder(4);
     const result = encoder.encode("abc");
@@ -326,6 +391,23 @@ describe("Encoder", () => {
     for (let i = 0; i < value.length; i += 1) {
       view.setUint8(i + 5, Byte.POSITIVE_FIXINT_MASK & value[i]);
     }
+
+    expect(Ok.is(result)).toBeTruthy();
+    expect(Ok.unwrap(result)).toStrictEqual(expected);
+  });
+
+  test("encode fixmap works", () => {
+    const value = { a: 1 };
+    const size = 4;
+    const encoder = new Encoder(size);
+    const result = encoder.encode(value);
+
+    const expected = new Uint8Array(size);
+    const view = new DataView(expected.buffer);
+    view.setUint8(0, Byte.FIXMAP_MASK & 1);
+    view.setUint8(1, Byte.FIXSTR | 1);
+    view.setUint8(2, 97);
+    view.setUint8(3, Byte.POSITIVE_FIXINT_MASK & 1);
 
     expect(Ok.is(result)).toBeTruthy();
     expect(Ok.unwrap(result)).toStrictEqual(expected);
