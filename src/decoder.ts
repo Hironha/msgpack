@@ -495,7 +495,7 @@ export class Decoder {
     reader: Reader,
     head: number,
   ): Result<{ [key: string]: MsgpackValue }, DecodeIssue> {
-    const size = head & 0x00001111;
+    const size = head & 0b00001111;
     return this.decodeMap(reader, size);
   }
 

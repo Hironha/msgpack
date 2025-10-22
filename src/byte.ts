@@ -80,7 +80,7 @@ export const FLOAT32 = 0xca;
 export const FLOAT64 = 0xcb;
 
 // use with OR to set most significant four bits as 1001
-export const FIXARRAY_MASK = 0x10010000;
+export const FIXARRAY_MASK = 0b10010000;
 export const FIXARRAY_MAX = 15;
 
 // most significant byte of array16
@@ -91,8 +91,8 @@ export const ARRAY16_MAX = 2 ** 16 - 1;
 export const ARRAY32 = 0xdd;
 export const ARRAY32_MAX = 2 ** 32 - 1;
 
-// use with AND to set most significant bytes as 1000
-export const FIXMAP_MASK = 0b10001111;
+// use with OR to set most significant bytes as 1000
+export const FIXMAP_MASK = 0b10000000;
 export const FIXMAP_MAX = 15;
 
 // most significant byte of map16
@@ -206,7 +206,7 @@ export function isArray32(byte: number): boolean {
 }
 
 export function isFixmap(byte: number): boolean {
-  return (byte & 0xb11110000) === FIXMAP_MASK;
+  return (byte & 0b11110000) === FIXMAP_MASK;
 }
 
 export function isMap16(byte: number): boolean {

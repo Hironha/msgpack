@@ -263,14 +263,14 @@ export class Encoder {
     const keys = Object.keys(value);
     const length = keys.length;
     if (length <= Byte.FIXMAP_MAX) {
-      writer.ensureCapacity(2 * length + 1);
-      writer.writeUint8(Byte.FIXMAP_MASK & length);
+      writer.ensureCapacity(1);
+      writer.writeUint8(Byte.FIXMAP_MASK | length);
     } else if (length <= Byte.MAP16_MAX) {
-      writer.ensureCapacity(2 * length + 3);
+      writer.ensureCapacity(3);
       writer.writeUint8(Byte.MAP16);
       writer.writeUint16(length);
     } else if (length <= Byte.MAP32_MAX) {
-      writer.ensureCapacity(2 * length + 5);
+      writer.ensureCapacity(5);
       writer.writeUint8(Byte.MAP32);
       writer.writeUint32(length);
     } else {

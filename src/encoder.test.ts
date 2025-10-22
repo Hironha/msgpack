@@ -404,7 +404,7 @@ describe("Encoder", () => {
 
     const expected = new Uint8Array(size);
     const view = new DataView(expected.buffer);
-    view.setUint8(0, Byte.FIXMAP_MASK & 1);
+    view.setUint8(0, Byte.FIXMAP_MASK | 1);
     view.setUint8(1, Byte.FIXSTR | 1);
     view.setUint8(2, 97);
     view.setUint8(3, Byte.POSITIVE_FIXINT_MASK & 1);
