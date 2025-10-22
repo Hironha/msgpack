@@ -235,7 +235,7 @@ export class Encoder {
     const length = value.length;
     if (length <= Byte.FIXARRAY_MAX) {
       writer.ensureCapacity(1);
-      writer.writeUint8(Byte.FIXARRAY_MASK | length);
+      writer.writeUint8(length | Byte.FIXARRAY_MASK);
     } else if (length <= Byte.ARRAY16_MAX) {
       writer.ensureCapacity(3);
       writer.writeUint8(Byte.ARRAY16);

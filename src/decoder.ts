@@ -457,7 +457,7 @@ export class Decoder {
   }
 
   private decodeFixarray(head: number): Result<MsgpackValue[], DecodeIssue> {
-    const size = head & 0x00001111;
+    const size = head & 0b00001111;
     return this.decodeArray(size);
   }
 
